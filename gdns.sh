@@ -29,10 +29,10 @@ declare -r constOpenDNSFamilyShield=("208.67.222.123" "208.67.220.123" "2620:119
 declare -r constOpenDNSHome=("208.67.222.222" "208.67.220.220" "2620:119:35::35" "2620:119:53::53")
 
 declare argBackup=0
-declare argHelp=0
-declare argVerify=0
 declare -a argDNS=()
 declare -a argFallback=()
+declare argHelp=0
+declare argVerify=0
 
 declare param=""
 for arg in ${args[@]}; do
