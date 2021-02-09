@@ -11,12 +11,6 @@
 #https://andrea.corbellini.name/2020/04/28/ubuntu-global-dns/
 #https://www.raymond.cc/blog/how-to-block-pornographic-websites-without-spending-money-on-software/
 
-#https://stackoverflow.com/a/42876846
-if [[ "$EUID" != 0 ]]; then
-    echo "Script must run as root to work properly."
-    exit 1
-fi
-
 declare -r date=$(date +"%Y%m%d%H%M%S")
 declare -r args=("$@")
 
@@ -99,6 +93,12 @@ if [ $argHelp -eq 1 ]; then
     echo "      ${constOpenDNSHome[@]}"
     echo
     exit 0
+fi
+
+#https://stackoverflow.com/a/42876846
+if [[ "$EUID" != 0 ]]; then
+    echo "Script must run as root to work properly."
+    exit 1
 fi
 
 #https://stackoverflow.com/a/18123263
