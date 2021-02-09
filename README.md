@@ -8,7 +8,9 @@ To understand how this script works to achieve its original aim, use your favori
 
 # Quick Start
 Download the script, open a terminal, and run the following commands where the file is located:
+
   sudo chmod +x gdns.sh
+
   sudo ./gdns.sh -b -v -d CBFF -f ODFS
 
 # Works On
