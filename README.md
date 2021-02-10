@@ -19,7 +19,7 @@ Download the script, open a terminal, and run the following commands where the f
   
   #Run this to reset global DNS to original settings
   
-  sudo ./gdns.sh -b -c -p -v -d CBFF -f ODFS
+  sudo ./gdns.sh -b -c -p -v -d -f
 
 # Works On
 Tested and confirmed to work on the following systems:
