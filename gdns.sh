@@ -1,18 +1,18 @@
 #!/bin/bash
 
-#Released: February 9, 2021
-#Version : 0.0.0.1
-
 #Setup: Run these commands where the script is located
-#sudo chmod +x gdns.sh
-#sudo ./gdns.sh --help
+#   sudo chmod +x gdns.sh
+#   sudo ./gdns.sh --help
 
 #References
 #https://andrea.corbellini.name/2020/04/28/ubuntu-global-dns/
 #https://www.raymond.cc/blog/how-to-block-pornographic-websites-without-spending-money-on-software/
 
+declare -r ver="0.0.0.2"
 declare -r date=$(date +"%Y%m%d%H%M%S")
 declare -r args=("$@")
+declare -r epfx="\n~~~"
+declare -r esfx=" \n"
 
 #https://cleanbrowsing.org/filters
 declare -r constCleanBrowsingFamilyFilter=("185.228.168.168" "2a0d:2a00:1::" "185.228.169.168" "2a0d:2a00:2::")
@@ -29,20 +29,26 @@ declare -r constOpenDNSFamilyShield=("208.67.222.123" "208.67.220.123" "2620:119
 declare -r constOpenDNSHome=("208.67.222.222" "208.67.220.220" "2620:119:35::35" "2620:119:53::53")
 
 declare argBackup=0
-declare -a argDNS=()
-declare -a argFallback=()
+declare argClean=0
+declare argDNS=0
+declare argFallback=0
 declare argHelp=0
-declare argVerify=0
+declare argPing=0
+declare v=""
+declare -a argsDNS=()
+declare -a argsFallback=()
 
 declare param=""
 for arg in ${args[@]}; do
     declare -a constDNS=()
 
-    if   [ "$arg" == "-b" ] || [ "$arg" == "--backup"   ]; then param="backup"
-    elif [ "$arg" == "-d" ] || [ "$arg" == "--dns"      ]; then param="dns"; continue;
-    elif [ "$arg" == "-f" ] || [ "$arg" == "--fallback" ]; then param="fallback"; continue;    
-    elif [ "$arg" == "-h" ] || [ "$arg" == "--help"     ]; then param="help"
-    elif [ "$arg" == "-v" ] || [ "$arg" == "--verify"   ]; then param="verify"
+    if   [ "$arg" == "-b" ] || [ "$arg" == "--backup"   ]; then argBackup=1; continue
+    elif [ "$arg" == "-c" ] || [ "$arg" == "--clean"    ]; then argClean=1; continue
+    elif [ "$arg" == "-d" ] || [ "$arg" == "--dns"      ]; then argDNS=1; param="dns"; continue;
+    elif [ "$arg" == "-f" ] || [ "$arg" == "--fallback" ]; then argFallback=1; param="fallback"; continue;    
+    elif [ "$arg" == "-h" ] || [ "$arg" == "--help"     ]; then argHelp=1; continue
+    elif [ "$arg" == "-p" ] || [ "$arg" == "--ping"     ]; then argPing=1; continue
+    elif [ "$arg" == "-v" ] || [ "$arg" == "--verbose"  ]; then v="v"; continue
     fi
 
     if   [ "$arg" == "CBFF" ] || [ "$arg" == "CleanBrowsingFamilyFilter"   ]; then constDNS=( "${constCleanBrowsingFamilyFilter[@]}" )
@@ -53,127 +59,164 @@ for arg in ${args[@]}; do
     elif [ "$arg" == "ODH"  ] || [ "$arg" == "OpenDNSHome"                 ]; then constDNS=( "${constOpenDNSHome[@]}" )
     fi
 
-    if   [ "$param" == "backup"   ]; then argBackup=1; continue
-    elif [ "$param" == "dns"      ]; then if [ ${#constDNS[@]} -gt 0 ]; then argDNS+=( "${constDNS[@]}" ); else argDNS+=( "$arg" ); fi; continue
-    elif [ "$param" == "fallback" ]; then if [ ${#constDNS[@]} -gt 0 ]; then argFallback+=( "${constDNS[@]}" ); else argFallback+=( "$arg" ); fi; continue    
-    elif [ "$param" == "help"     ]; then argHelp=1; continue
-    elif [ "$param" == "verify"   ]; then argVerify=1; continue
-    elif [ "$param" == ""         ]; then echo "ERROR: Invalid argument or flags missing"; exit 1
+    if   [ "$param" == "dns"      ]; then if [ ${#constDNS[@]} -gt 0 ]; then argsDNS+=( "${constDNS[@]}" ); else argsDNS+=( "$arg" ); fi; continue
+    elif [ "$param" == "fallback" ]; then if [ ${#constDNS[@]} -gt 0 ]; then argsFallback+=( "${constDNS[@]}" ); else argsFallback+=( "$arg" ); fi; continue    
+    elif [ "$param" == ""         ]; then printf "$epfx ERROR: Invalid argument or flags missing! $esfx"; exit 1
     fi
 done
 
-if [ $argHelp -eq 1 ]; then
-    echo "Usage: ./gdns.sh [OPTION]...                          | REQUIRES SUDO PRIVILEGES"
-    echo "Helper script for global DNS network setting used by /etc/systemd/resolved.conf"
-    echo
-    echo "Examples:"
-    echo "  ./gdns.sh                        # Resets all files to original settings"
-    echo "  ./gdns.sh -b                     # Same as previous but also creates backups"
-    echo "  ./gdns.sh -b -v -d CBFF          # Same as previous but also set global dns"
-    echo "  ./gdns.sh -f 8.8.8.8 8.8.4.4     # Sets fallback global dns to given ips"
-    echo
-    echo "  -b, --backup               Enables creating backups for all modified files"
-    echo "  -d, --dns [ip|const]       List ips to set for global DNS"
-    echo "  -f, --fallback [ip|const]  List ips to set for global fallback DNS"
-    echo "  -v, --verify               Forces address to be verified by ping to proceed"
-    echo
-    echo "The following are supported constants [short|long] for public DNS servers:"
-    echo
-    echo "  CBFF|CleanBrowsingFamilyFilter"
-    echo "      ${constCleanBrowsingFamilyFilter[@]}"
-    echo "  CBAF|CleanBrowsingAdultFilter"
-    echo "      ${constCleanBrowsingAdultFilter[@]}"
-    echo "  CBSF|CleanBrowsingSecurityFilter"
-    echo "      ${constCleanBrowsingSecurityFilter[@]}"
-    echo "  GPD|GooglePublicDNS" 
-    echo "      ${constGooglePublicDNS[@]}"
-    echo "  ODFS|OpenDNSFamilyShield"
-    echo "      ${constOpenDNSFamilyShield[@]}"
-    echo "  ODH|OpenDNSHome"
-    echo "      ${constOpenDNSHome[@]}"
-    echo
+if [ $argHelp -eq 1 ] || [ ${#args[@]} -eq 0 ]; then
+    printf "Usage: ./gdns.sh [OPTION]...                          | REQUIRES SUDO PRIVILEGES"
+    printf "Version: $ver"
+    printf "Helper script for setting global DNS network values"
+    printf
+    printf "Examples:"
+    printf "  ./gdns.sh -d -f                  # Resets all files to original settings"
+    printf "  ./gdns.sh -b -d CBFF             # Create backup and set global dns to const"
+    printf "  ./gdns.sh -f 8.8.8.8 8.8.4.4     # Sets fallback global dns to given ips"
+    printf
+    printf "  -b, --backup                Enables creating backups for all modified files"
+    printf "  -c, --clean                 Remove all previous backup files"    
+    printf "  -d, --dns [ips|consts]      List ips to set for global DNS"
+    printf "  -f, --fallback [ips|consts] List ips to set for global fallback DNS"
+    printf "  -p, --ping                  Test ip addresses via ping to proceed"
+    printf "  -v, --verbose               Output more details about what is being done"
+    printf
+    printf "The following are supported constants [short|long] for public DNS servers:"
+    printf
+    printf "  CBFF|CleanBrowsingFamilyFilter"
+    printf "      ${constCleanBrowsingFamilyFilter[@]}"
+    printf "  CBAF|CleanBrowsingAdultFilter"
+    printf "      ${constCleanBrowsingAdultFilter[@]}"
+    printf "  CBSF|CleanBrowsingSecurityFilter"
+    printf "      ${constCleanBrowsingSecurityFilter[@]}"
+    printf "  GPD|GooglePublicDNS" 
+    printf "      ${constGooglePublicDNS[@]}"
+    printf "  ODFS|OpenDNSFamilyShield"
+    printf "      ${constOpenDNSFamilyShield[@]}"
+    printf "  ODH|OpenDNSHome"
+    printf "      ${constOpenDNSHome[@]}"
+    printf
     exit 0
 fi
 
-#https://stackoverflow.com/a/42876846
-if [[ "$EUID" != 0 ]]; then
-    echo "Script must run as root to work properly."
+if [[ "$EUID" != 0 ]]; then         #https://stackoverflow.com/a/42876846
+    printf "$epfx ERROR: Script must run as root to work properly! $esfx"
     exit 1
 fi
 
-#https://stackoverflow.com/a/18123263
-if [ $argVerify -eq 1 ]; then
-    for dns in ${argDNS[@]}; do
+if [ $argClean -eq 1 ]; then
+    if [[ $v == "v" ]]; then printf "$epfx Removing previous backup files $esfx"; fi
+    rm -f$v /etc/NetworkManager/conf.d/dns.conf.*.bak
+    rm -f$v /etc/systemd/resolved.conf.*.bak
+    rm -f$v /etc/resolv.conf.*.bak
+    rm -rf$v /tmp/gdns
+fi
+
+if [ $argBackup -eq 1 ]; then
+    if [[ $v == "v" ]]; then printf "$epfx Creating backup files $esfx"; fi
+    cp -f$v /etc/NetworkManager/conf.d/dns.conf /etc/NetworkManager/conf.d/dns.conf.$date.bak    
+    cp -f$v /etc/systemd/resolved.conf /etc/systemd/resolved.conf.$date.bak
+    cp -f$v --no-preserve=links /etc/resolv.conf /etc/resolv.conf.$date.bak
+fi
+
+if [ $argPing -eq 1 ]; then       #https://stackoverflow.com/a/18123263
+    if [[ $v == "v" ]]; then printf "$epfx Pinging provided dns ip addresses $esfx"; fi
+    for dns in ${argsDNS[@]}; do
         if ping -c 1 "$dns" &> /dev/null 
         then
-          echo \"$dns\" is found
+          printf "  found: \"$dns\" $esfx"
         else
-          echo \"$dns\" IS NOT FOUND
+          printf "  ERROR: \"$dns\" $esfx"
           exit 1
         fi
     done
-    for dns in ${argFallback[@]}; do
-        if ping -c 1 "$dns" &> /dev/null
+    for fallback in ${argsFallback[@]}; do
+        if ping -c 1 "$fallback" &> /dev/null
         then
-          echo \"$dns\" is found
+          printf "  found: \"$fallback\" $esfx"
         else
-          echo \"$dns\" IS NOT FOUND
+          printf "  ERROR: \"$fallback\" $esfx"
           exit 1
         fi
-    done    
+    done
 fi
 
-#/etc/NetworkManager/conf.d/dns.conf
-if [ ! -f /etc/NetworkManager/conf.d/dns.conf ]; then
-    touch /etc/NetworkManager/conf.d/dns.conf || exit
-elif [ $argBackup -eq 1 ]; then
-    cp /etc/NetworkManager/conf.d/dns.conf /etc/NetworkManager/conf.d/dns.conf.$date.bak
-fi
-truncate -s 0 /etc/NetworkManager/conf.d/dns.conf
-if [ ${#argDNS[@]} -gt 0 ] || [ ${#argFallback[@]} -gt 0 ]; then
-    echo -e "[main]" | tee -a /etc/NetworkManager/conf.d/dns.conf &> /dev/null
-    echo -e "dns=none" | tee -a /etc/NetworkManager/conf.d/dns.conf &> /dev/null
-    echo -e "systemd-resolved=false" | tee -a /etc/NetworkManager/conf.d/dns.conf &> /dev/null
+if [ $argDNS -eq 1 ] || [ $argFallback -eq 1 ]; then
+    declare tmpDir="/tmp/gdns/systemd-resolve/status"
+    declare tmpPrev=$date.prev.dat
+    declare tmpCurr=$date.curr.dat
+
+    if [[ $v == "v" ]]; then 
+        mkdir -p $tmpDir
+        systemd-resolve --status | cat > "$tmpDir/$tmpPrev"
+    fi
+
+    declare file=""
+
+    file="/etc/NetworkManager/conf.d/dns.conf"
+    if [[ $v == "v" ]]; then printf "$epfx Processing $file $esfx"; fi
+    if [ ! -f $file ]; then
+        touch $file || exit
+    fi
+    truncate -s 0 $file
+    if [ ${#argsDNS[@]} -gt 0 ] || [ ${#argsFallback[@]} -gt 0 ]; then
+        echo -e "[main]" | tee -a $file &> /dev/null
+        echo -e "dns=none" | tee -a $file &> /dev/null
+        echo -e "systemd-resolved=false" | tee -a $file &> /dev/null
+    fi
+    if [[ $v == "v" ]] && [ $argBackup -eq 1 ]; then 
+        printf "$file.$date.bak <---OLD vs NEW---> $file\n"
+        diff -wy --suppress-common-lines $file.$date.bak $file
+    fi
+    
+    file="/etc/systemd/resolved.conf"
+    if [[ $v == "v" ]]; then printf "$epfx Processing $file $esfx"; fi
+    if [ ${#argsDNS[@]} -gt 0 ]; then
+        printf -v dns ' %s' "${argsDNS[@]}" && dns=${dns:1}    #https://stackoverflow.com/a/49167382
+        sed -r -i "s/^#?DNS=.*/DNS=${dns}/" $file
+    elif [ $argDNS -eq 1 ]; then
+        sed -r -i "s/^#?DNS=.*/#DNS=/" $file
+    fi
+    if [ ${#argsFallback[@]} -gt 0 ]; then
+        printf -v fallback ' %s' "${argsFallback[@]}" && fallback=${fallback:1}    #https://stackoverflow.com/a/49167382
+        sed -r -i "s/^#?FallbackDNS=.*/FallbackDNS=${fallback}/" $file
+    elif [ $argFallback -eq 1 ]; then
+        sed -r -i "s/^#?FallbackDNS=.*/#FallbackDNS=/" $file
+    fi
+    if [[ $v == "v" ]] && [ $argBackup -eq 1 ]; then 
+        printf "$file.$date.bak <---OLD vs NEW---> $file\n"
+        diff -wy --suppress-common-lines $file.$date.bak $file
+    fi
+
+    if [[ $v == "v" ]]; then printf "$epfx Flush and restarting networking services $esfx"; fi
+    systemd-resolve --flush-caches
+    if [ -f "/etc/init.d/dns-clean" ]; then /etc/init.d/dns-clean start; fi
+    /etc/init.d/networking restart
+    systemctl reload NetworkManager.service
+    systemctl restart resolvconf.service
+    systemctl restart systemd-resolved.service
+    resolvconf -u 2>/dev/null
+    
+    file="/etc/resolv.conf"
+    if [[ $v == "v" ]]; then printf "$epfx Processing $file $esfx"; fi
+    rm -f $file
+    ln -sf /run/resolvconf/resolv.conf $file
+    ln -sf /run/systemd/resolve/resolv.conf $file
+    if [[ $v == "v" ]] && [ $argBackup -eq 1 ]; then 
+        printf "$file.$date.bak <---OLD vs NEW---> $file\n"
+        diff -wy --suppress-common-lines $file.$date.bak $file
+    fi
+    
+    if [[ $v == "v" ]]; then 
+        systemd-resolve --status | cat > "$tmpDir/$tmpCurr"
+        printf "$epfx Compare networking settings $esfx"
+        printf "$tmpDir/$tmpPrev <---OLD vs NEW---> $tmpDir/$tmpCurr\n"
+        diff -wy --suppress-common-lines "$tmpDir/$tmpPrev" "$tmpDir/$tmpCurr"
+    fi    
 fi
 
-#/etc/systemd/resolved.conf
-if [ $argBackup -eq 1 ]; then
-    cp /etc/systemd/resolved.conf /etc/systemd/resolved.conf.$date.bak
-fi
-if [ ${#argDNS[@]} -gt 0 ]; then
-    printf -v dns ' %s' "${argDNS[@]}" && dns=${dns:1}    #https://stackoverflow.com/a/49167382
-    sed -r -i "s/^#?DNS=.*/DNS=${dns}/" /etc/systemd/resolved.conf
-else
-    sed -r -i "s/^#?DNS=.*/#DNS=/" /etc/systemd/resolved.conf
-fi
-if [ ${#argFallback[@]} -gt 0 ]; then
-    printf -v fallback ' %s' "${argFallback[@]}" && fallback=${fallback:1}    #https://stackoverflow.com/a/49167382
-    sed -r -i "s/^#?FallbackDNS=.*/FallbackDNS=${fallback}/" /etc/systemd/resolved.conf
-else
-    sed -r -i "s/^#?FallbackDNS=.*/#FallbackDNS=/" /etc/systemd/resolved.conf
-fi
-
-#/etc/resolv.conf
-if [ $argBackup -eq 1 ]; then
-    mv /etc/resolv.conf /etc/resolv.conf.$date.backup
-else
-    rm -f /etc/resolv.conf
-fi
-ln -nsf /run/resolvconf/resolv.conf /etc/resolv.conf
-ln -nsf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-
-# restart services
-systemd-resolve --flush-caches
-/etc/init.d/networking restart
-systemctl reload NetworkManager.service
-systemctl restart resolvconf.service
-systemctl restart systemd-resolved.service
-#resolvconf -u
-systemd-resolve --status | cat
-
-echo
-echo "Review networking output to verify global DNS settings are correct"
-echo 
+if [[ $v == "v" ]]; then printf "$epfx Done! $esfx"; fi
 
 exit 0
 
