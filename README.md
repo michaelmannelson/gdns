@@ -17,11 +17,11 @@ Download the script, open a terminal, and run the following commands where the f
   
   `sudo ./gdns.sh -h`
 
-  Run this to set dns to CleanBrowsing and OpenDNS
+  Run this to set global dns to [CleanBrowsing](https://cleanbrowsing.org) and [OpenDNS](https://www.opendns.com/home-internet-security)
   
   `sudo ./gdns.sh -b -c -d CBFF -f ODFS`
   
-  Run this to reset global DNS to original settings
+  Run this to reset global dns to original settings
   
   `sudo ./gdns.sh -b -c -d -f`
 
