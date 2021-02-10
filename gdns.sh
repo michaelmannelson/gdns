@@ -66,37 +66,37 @@ for arg in ${args[@]}; do
 done
 
 if [ $argHelp -eq 1 ] || [ ${#args[@]} -eq 0 ]; then
-    printf "Usage: ./gdns.sh [OPTION]...                          | REQUIRES SUDO PRIVILEGES"
-    printf "Version: $ver"
-    printf "Helper script for setting global DNS network values"
-    printf
-    printf "Examples:"
-    printf "  ./gdns.sh -d -f                  # Resets all files to original settings"
-    printf "  ./gdns.sh -b -d CBFF             # Create backup and set global dns to const"
-    printf "  ./gdns.sh -f 8.8.8.8 8.8.4.4     # Sets fallback global dns to given ips"
-    printf
-    printf "  -b, --backup                Enables creating backups for all modified files"
-    printf "  -c, --clean                 Remove all previous backup files"    
-    printf "  -d, --dns [ips|consts]      List ips to set for global DNS"
-    printf "  -f, --fallback [ips|consts] List ips to set for global fallback DNS"
-    printf "  -p, --ping                  Test ip addresses via ping to proceed"
-    printf "  -v, --verbose               Output more details about what is being done"
-    printf
-    printf "The following are supported constants [short|long] for public DNS servers:"
-    printf
-    printf "  CBFF|CleanBrowsingFamilyFilter"
-    printf "      ${constCleanBrowsingFamilyFilter[@]}"
-    printf "  CBAF|CleanBrowsingAdultFilter"
-    printf "      ${constCleanBrowsingAdultFilter[@]}"
-    printf "  CBSF|CleanBrowsingSecurityFilter"
-    printf "      ${constCleanBrowsingSecurityFilter[@]}"
-    printf "  GPD|GooglePublicDNS" 
-    printf "      ${constGooglePublicDNS[@]}"
-    printf "  ODFS|OpenDNSFamilyShield"
-    printf "      ${constOpenDNSFamilyShield[@]}"
-    printf "  ODH|OpenDNSHome"
-    printf "      ${constOpenDNSHome[@]}"
-    printf
+    echo "Usage: ./gdns.sh [OPTION]...                          | REQUIRES SUDO PRIVILEGES"
+    echo "Version: $ver"
+    echo "Helper script for setting global DNS network values"
+    echo
+    echo "Examples:"
+    echo "  ./gdns.sh -d -f                  # Resets all files to original settings"
+    echo "  ./gdns.sh -b -d CBFF             # Create backup and set global dns to const"
+    echo "  ./gdns.sh -f 8.8.8.8 8.8.4.4     # Sets fallback global dns to given ips"
+    echo
+    echo "  -b, --backup                Enables creating backups for all modified files"
+    echo "  -c, --clean                 Remove all previous backup files"    
+    echo "  -d, --dns [ips|consts]      List ips to set for global DNS"
+    echo "  -f, --fallback [ips|consts] List ips to set for global fallback DNS"
+    echo "  -p, --ping                  Test ip addresses via ping to proceed"
+    echo "  -v, --verbose               Output more details about what is being done"
+    echo
+    echo "The following are supported constants [short|long] for public DNS servers:"
+    echo
+    echo "  CBFF|CleanBrowsingFamilyFilter"
+    echo "      ${constCleanBrowsingFamilyFilter[@]}"
+    echo "  CBAF|CleanBrowsingAdultFilter"
+    echo "      ${constCleanBrowsingAdultFilter[@]}"
+    echo "  CBSF|CleanBrowsingSecurityFilter"
+    echo "      ${constCleanBrowsingSecurityFilter[@]}"
+    echo "  GPD|GooglePublicDNS" 
+    echo "      ${constGooglePublicDNS[@]}"
+    echo "  ODFS|OpenDNSFamilyShield"
+    echo "      ${constOpenDNSFamilyShield[@]}"
+    echo "  ODH|OpenDNSHome"
+    echo "      ${constOpenDNSHome[@]}"
+    echo
     exit 0
 fi
 
