@@ -127,7 +127,7 @@ fi
 if [ ! -f /etc/NetworkManager/conf.d/dns.conf ]; then
     touch /etc/NetworkManager/conf.d/dns.conf || exit
 elif [ $argBackup -eq 1 ]; then
-    cp /etc/NetworkManager/conf.d/dns.conf /etc/NetworkManager/conf.d/dns.$date.conf
+    cp /etc/NetworkManager/conf.d/dns.conf /etc/NetworkManager/conf.d/dns.conf.$date.bak
 fi
 truncate -s 0 /etc/NetworkManager/conf.d/dns.conf
 if [ ${#argDNS[@]} -gt 0 ] || [ ${#argFallback[@]} -gt 0 ]; then
@@ -138,7 +138,7 @@ fi
 
 #/etc/systemd/resolved.conf
 if [ $argBackup -eq 1 ]; then
-    cp /etc/systemd/resolved.conf /etc/systemd/resolved.conf.$date.backup
+    cp /etc/systemd/resolved.conf /etc/systemd/resolved.conf.$date.bak
 fi
 if [ ${#argDNS[@]} -gt 0 ]; then
     printf -v dns ' %s' "${argDNS[@]}" && dns=${dns:1}    #https://stackoverflow.com/a/49167382
@@ -155,7 +155,7 @@ fi
 
 #/etc/resolv.conf
 if [ $argBackup -eq 1 ]; then
-    mv /etc/resolv.conf /etc/resolv.$date.backup
+    mv /etc/resolv.conf /etc/resolv.conf.$date.backup
 else
     rm -f /etc/resolv.conf
 fi
