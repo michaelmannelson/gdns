@@ -17,7 +17,7 @@ Download the script, open a terminal, and run the following commands where the f
   
   `sudo ./gdns.sh -h`
 
-  Run this to set global DNS filter
+  Run this to set dns to CleanBrowsing and OpenDNS
   
   `sudo ./gdns.sh -b -c -d CBFF -f ODFS`
   
