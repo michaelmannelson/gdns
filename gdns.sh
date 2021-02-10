@@ -127,8 +127,7 @@ if [ $argPing -eq 1 ]; then       #https://stackoverflow.com/a/18123263
     if [[ $v == "v" ]]; then printf "$epfx Pinging provided dns ip addresses $esfx"; fi
     for dns in ${argsDNS[@]}; do
         if ping -c 1 "$dns" &> /dev/null 
-        then
-          printf "  found: \"$dns\" $esfx"
+        then printf "  found: \"$dns\" $esfx"
         else
           printf "  ERROR: \"$dns\" $esfx"
           exit 1
@@ -136,8 +135,7 @@ if [ $argPing -eq 1 ]; then       #https://stackoverflow.com/a/18123263
     done
     for fallback in ${argsFallback[@]}; do
         if ping -c 1 "$fallback" &> /dev/null
-        then
-          printf "  found: \"$fallback\" $esfx"
+        then printf "  found: \"$fallback\" $esfx"
         else
           printf "  ERROR: \"$fallback\" $esfx"
           exit 1
@@ -159,9 +157,7 @@ if [ $argDNS -eq 1 ] || [ $argFallback -eq 1 ]; then
 
     file="/etc/NetworkManager/conf.d/dns.conf"
     if [[ $v == "v" ]]; then printf "$epfx Processing $file $esfx"; fi
-    if [ ! -f $file ]; then
-        touch $file || exit
-    fi
+    if [ ! -f $file ]; then touch $file || exit; fi
     truncate -s 0 $file
     if [ ${#argsDNS[@]} -gt 0 ] || [ ${#argsFallback[@]} -gt 0 ]; then
         echo -e "[main]" | tee -a $file &> /dev/null
