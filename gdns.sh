@@ -8,7 +8,7 @@
 #https://andrea.corbellini.name/2020/04/28/ubuntu-global-dns/
 #https://www.raymond.cc/blog/how-to-block-pornographic-websites-without-spending-money-on-software/
 
-declare -r ver="0.0.0.2"
+declare -r ver="0.0.0.3"
 declare -r date=$(date +"%Y%m%d%H%M%S")
 declare -r args=("$@")
 declare -r epfx="\n~~~"
@@ -73,7 +73,10 @@ if [ $argHelp -eq 1 ] || [ ${#args[@]} -eq 0 ]; then
     echo "Examples:"
     echo "  ./gdns.sh -d -f                  # Resets all files to original settings"
     echo "  ./gdns.sh -b -d CBFF             # Create backup and set global dns to const"
-    echo "  ./gdns.sh -f 8.8.8.8 8.8.4.4     # Sets fallback global dns to given ips"
+    echo "  ./gdns.sh -d 8.8.8.8             # Sets global dns to given ips"
+    echo "  ./gdns.sh -f 8.8.4.4             # Sets fallback global dns to given ips"
+    echo "  ./gdns.sh -b -c -d CBFF -f ODFS  # Sets dns and fallback to const ips"
+    echo "  ./gdns.sh -b -c -d -f            # Resets dns to original settings"
     echo
     echo "  -b, --backup                Enables creating backups for all modified files"
     echo "  -c, --clean                 Remove all previous backup files"    
