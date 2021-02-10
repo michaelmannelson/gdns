@@ -10,12 +10,15 @@ To understand how this script works to achieve its original aim, use your favori
 Download the script, open a terminal, and run the following commands where the file is located:
 
   #Run this to enable the script to be executed
+  
   sudo chmod +x gdns.sh
 
   #Run this to set global DNS filter
+  
   sudo ./gdns.sh -b -c -p -v -d CBFF -f ODFS
   
   #Run this to reset global DNS to original settings
+  
   sudo ./gdns.sh -b -c -p -v -d CBFF -f ODFS
 
 # Works On
