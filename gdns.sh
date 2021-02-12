@@ -157,7 +157,7 @@ if [ $argDNS -eq 1 ] || [ $argFallback -eq 1 ]; then
 
     file="/etc/NetworkManager/conf.d/dns.conf"
     if [[ $v == "v" ]]; then printf "$epfx Processing $file $esfx"; fi
-    if [ ! -f $file ]; then touch $file || exit; fi
+    if [ ! -f $file ]; then install -Dv /dev/null "$file"; fi
     truncate -s 0 $file
     if [ ${#argsDNS[@]} -gt 0 ] || [ ${#argsFallback[@]} -gt 0 ]; then
         echo -e "[main]" | tee -a $file &> /dev/null
